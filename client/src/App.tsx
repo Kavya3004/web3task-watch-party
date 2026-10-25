@@ -102,6 +102,7 @@ export default function App() {
     function createPlayer() {
       const YT = window.YT;
       if (!YT?.Player || playerRef.current) return;
+      if (!room) return;
       playerRef.current = new YT.Player("youtube-player", {
         width: "100%", height: "100%", videoId: room.playback.videoId,
         playerVars: { playsinline: 1, rel: 0 },
@@ -214,7 +215,6 @@ export default function App() {
     </main>
   );
 
-  const currentPerson = room.participants.find((p) => p.userId === userId);
   return (
     <main className="app-shell">
       <header className="app-header">
