@@ -1,80 +1,335 @@
-# WatchTogether — YouTube Watch Party
+# 🎬 WatchTogether — Real-Time YouTube Watch Party
 
-A real-time YouTube watch party built with React, TypeScript, Express, Socket.IO, and the YouTube IFrame Player API.
+A full-stack, real-time YouTube Watch Party application that allows multiple users to watch videos together in synchronized rooms, communicate through live chat, and manage playback using role-based permissions.
 
-## Features
+Built as part of the **Web3Task Full Stack Developer Technical Evaluation**.
 
-- Create a room or join by room code / invite link
-- Host and participant roles; host can promote/demote moderators and remove participants
-- Server-side permission enforcement for playback controls
-- Play/pause, seek, and change-video synchronization
-- Room participant list and live chat
-- Responsive dark UI
+### 🌐 Live Demo
 
-## Requirements
+**[🚀 Launch WatchTogether](https://web3task-watch-party-psi.vercel.app/)**
 
-- Node.js 20 or newer
+**[💻 GitHub Repository](https://github.com/Kavya3004/web3task-watch-party)**
+
+**[⚙️ Backend Health Check](https://web3task-watch-party-api.onrender.com/health)**
+
+---
+
+## ✨ Features
+
+### 🎥 Real-Time Video Synchronization
+- Synchronized YouTube video playback across connected users.
+- Play, pause, and seek controls.
+- Change the currently playing YouTube video.
+- Broadcast playback updates through Socket.IO.
+- New participants receive the room's current playback state.
+
+### 🏠 Room Management
+- Create private watch rooms with unique room codes.
+- Join existing rooms using a room code.
+- Share invitation links with other participants.
+- View connected users in real time.
+- Automatically assign the Host role to the room creator.
+
+### 🔐 Role-Based Access Control
+
+The application supports three user roles:
+
+| Permission | Host | Moderator | Participant |
+|---|---|---|---|
+| Watch videos | ✅ | ✅ | ✅ |
+| Live chat | ✅ | ✅ | ✅ |
+| Play / Pause | ✅ | ✅ | ❌ |
+| Seek video | ✅ | ✅ | ❌ |
+| Change video | ✅ | ✅ | ❌ |
+| Assign moderators | ✅ | ❌ | ❌ |
+| Remove participants | ✅ | ❌ | ❌ |
+
+**Security:** Playback and role-management permissions are validated on the backend, preventing unauthorized users from controlling room state through direct Socket.IO events.
+
+### 💬 Live Chat
+- Real-time room messaging.
+- Participant names displayed alongside messages.
+- Messages broadcast to connected room members.
+
+### 📱 Responsive Interface
+- Modern dark-themed UI.
+- Responsive layouts for desktop and mobile screens.
+- Participant management sidebar.
+- Playback controls and video URL input.
+- Live connection and participant indicators.
+
+---
+
+## 🛠️ Technology Stack
+
+| Layer | Technology |
+|---|---|
+| Frontend | React 18, TypeScript |
+| Build Tool | Vite |
+| Styling | Custom CSS |
+| Backend | Node.js, Express |
+| Real-Time Communication | Socket.IO |
+| Video Integration | YouTube IFrame Player API |
+| State Management | React Hooks, Server-Side In-Memory State |
+| Frontend Hosting | Vercel |
+| Backend Hosting | Render |
+| Version Control | Git, GitHub |
+
+---
+
+## 🏗️ System Architecture
+
+The application follows a client-server architecture with real-time bidirectional communication.
+
+```text
+              ┌──────────────────────────┐
+              │       React Client       │
+              │    YouTube IFrame API    │
+              └────────────┬─────────────┘
+                           │
+                    Socket.IO Events
+                           │
+              ┌────────────▼─────────────┐
+              │    Express + Socket.IO   │
+              │                          │
+              │  Room Management         │
+              │  Permission Validation   │
+              │  Playback State          │
+              │  Participant Management  │
+              └────────────┬─────────────┘
+                           │
+                   Broadcast Updates
+                           │
+              ┌────────────▼─────────────┐
+              │    Connected Clients     │
+              │  Synchronized Playback   │
+              └──────────────────────────┘
+```
+
+### How Playback Synchronization Works
+
+1. A Host or Moderator performs a playback action.
+2. The frontend sends a `playback_action` event to the Socket.IO server.
+3. The server verifies the user's room membership and role.
+4. If authorized, the server updates the room's playback state.
+5. The updated room state is broadcast to connected participants.
+6. Each client applies the received state to its YouTube player.
+
+This ensures that the backend remains the authoritative source of shared playback state.
+
+### Example Playback Event
+
+```typescript
+socket.emit("playback_action", {
+  action: "seek",
+  currentTime: 120
+});
+```
+
+### Example Server-Side Authorization
+
+```typescript
+function mayControl(role: Role) {
+  return role === "host" || role === "moderator";
+}
+```
+
+Unauthorized playback requests are rejected by the backend.
+
+---
+
+## 📡 Socket.IO Events
+
+| Event | Direction | Purpose |
+|---|---|---|
+| `create_room` | Client → Server | Create a new watch room |
+| `join_room` | Client → Server | Join an existing room |
+| `room_state` | Server → Client | Synchronize room and playback state |
+| `playback_action` | Client → Server | Play, pause, seek, or change video |
+| `assign_role` | Client → Server | Promote or demote moderators |
+| `remove_participant` | Client → Server | Remove a user from the room |
+| `chat_message` | Bidirectional | Send and receive room messages |
+| `operation_error` | Server → Client | Report invalid or unauthorized actions |
+| `removed_from_room` | Server → Client | Notify a removed participant |
+
+---
+
+## 📁 Project Structure
+
+```text
+web3task-watch-party/
+│
+├── client/
+│   ├── src/
+│   │   ├── App.tsx
+│   │   ├── main.tsx
+│   │   ├── styles.css
+│   │   └── vite-env.d.ts
+│   ├── index.html
+│   ├── package.json
+│   ├── tsconfig.json
+│   └── vite.config.ts
+│
+├── server/
+│   ├── src/
+│   │   └── index.ts
+│   ├── package.json
+│   └── tsconfig.json
+│
+├── .env.example
+├── .gitignore
+├── package.json
+└── README.md
+```
+
+---
+
+## 🚀 Getting Started
+
+### Prerequisites
+
+- Node.js 20 or later
 - npm
+- Git
+- Modern web browser
 
-## Run locally
+### 1. Clone the Repository
+
+```bash
+git clone https://github.com/Kavya3004/web3task-watch-party.git
+cd web3task-watch-party
+```
+
+### 2. Install Dependencies
 
 ```bash
 npm install
-cp .env.example .env
+```
+
+### 3. Configure Environment Variables
+
+Create a `.env` file in the project root:
+
+```env
+PORT=4000
+CLIENT_ORIGIN=http://localhost:5173
+```
+
+For a custom backend URL, create `client/.env`:
+
+```env
+VITE_SERVER_URL=http://localhost:4000
+```
+
+### 4. Start the Development Servers
+
+```bash
 npm run dev
 ```
 
-On Windows PowerShell, copy the environment template with:
+The application will be available at:
 
-```powershell
-Copy-Item .env.example .env
+**Frontend:** http://localhost:5173
+
+**Backend:** http://localhost:4000
+
+**Health Check:** http://localhost:4000/health
+
+### 5. Build the Application
+
+```bash
+npm run build
 ```
 
-- Frontend: http://localhost:5173
-- Backend health check: http://localhost:4000/health
+This builds both the React frontend and the TypeScript backend.
 
-Open the app in two browser windows. Create a room in one, copy the room code, and join from the other.
+---
 
-## Environment variables
+## 🧪 Testing the Application
 
-Server `.env`:
-- `PORT=4000`
-- `CLIENT_ORIGIN=http://localhost:5173`
+1. Open the application in your browser.
+2. Enter a display name and create a watch room.
+3. Copy the generated room code or invitation link.
+4. Open another browser window or device.
+5. Join the same room using a different display name.
+6. Test synchronized video playback and seeking.
+7. Send messages through the live chat.
+8. Promote a participant to Moderator.
+9. Verify Moderator playback permissions.
+10. Verify that regular Participants cannot control shared playback.
+11. Test removing a participant from the room.
 
-Client `client/.env` (optional):
-- `VITE_SERVER_URL=http://localhost:4000`
+---
 
-For production, set `VITE_SERVER_URL` to the deployed backend URL and set `CLIENT_ORIGIN` on the backend to the deployed frontend origin. Use `https://` and `wss://` in production as appropriate.
+## 🌍 Deployment
 
-## Architecture
+The frontend and backend are deployed independently.
 
-The browser embeds a YouTube IFrame Player. The client sends playback actions to the Socket.IO server. The server validates the sender's role and updates the room's authoritative playback state. It broadcasts the new state to all room members, and clients apply it to their local player. The server is the security boundary: UI-disabled buttons alone are not authorization.
+### Frontend — Vercel
 
-Room state is currently in memory for the MVP. Rooms disappear when the server restarts or when everyone leaves. Add a database for persistence and Redis Pub/Sub or the Socket.IO Redis adapter for multi-instance scaling.
+**Live URL:** https://web3task-watch-party-psi.vercel.app/
 
-## Deployment
+Production environment variable:
 
-Deploy the backend as a persistent Node web service (for example, Render) and the frontend as a static site (for example, Render Static Site or Vercel). The backend must support WebSocket connections.
+```env
+VITE_SERVER_URL=https://web3task-watch-party-api.onrender.com
+```
 
-### Backend service
+### Backend — Render
 
-- Root directory: repository root
-- Build command: `npm install && npm run build -w server`
-- Start command: `npm run start -w server`
-- Environment: `PORT` is provided by the platform; set `CLIENT_ORIGIN` to your deployed frontend URL
+**Backend URL:** https://web3task-watch-party-api.onrender.com/
 
-### Frontend static site
+Production environment variable:
 
-- Root directory: `client`
-- Build command (from repository root if configured): `npm install && npm run build -w client`
-- Publish directory: `client/dist`
-- Environment variable: `VITE_SERVER_URL=https://YOUR-BACKEND-URL`
+```env
+CLIENT_ORIGIN=https://web3task-watch-party-psi.vercel.app
+```
 
-After deployment, replace this section with the actual live URL.
+The backend uses CORS configuration to allow requests from the deployed frontend.
 
-## Important MVP notes
+---
 
-- Host disconnect promotes the next connected participant to host.
-- In-memory state is not durable and does not support cross-instance synchronization.
-- The current-time updates are event-driven. For production-grade drift correction, add periodic state snapshots and carefully suppress player-originated events while applying remote updates.
-- Do not use this MVP as-is for untrusted public rooms without adding stronger abuse protection, rate limiting, and identity/authentication.
+## ⚠️ Current Limitations
+
+- Room and participant state is stored in server memory rather than a persistent database.
+- Rooms are lost when the backend restarts.
+- Room state is managed by a single backend instance.
+- Playback synchronization is event-driven and may experience timing differences due to network latency.
+- Browser autoplay restrictions may require user interaction before video playback.
+- Chat history is not persisted after room termination.
+
+These trade-offs keep the initial implementation focused on real-time collaboration, room management, and role-based permissions.
+
+---
+
+## 🔮 Future Improvements
+
+- PostgreSQL database integration for persistent rooms and users.
+- JWT-based authentication and user profiles.
+- Redis adapter for multi-instance Socket.IO scaling.
+- Improved playback drift correction.
+- Persistent chat history.
+- Host ownership transfer and reconnection recovery.
+- Video queues and playlists.
+- Emoji reactions.
+- Automated integration and end-to-end tests.
+
+---
+
+## 👩‍💻 Author
+
+**Kavya**
+
+GitHub: [@Kavya3004](https://github.com/Kavya3004)
+
+Project: Web3Task Full Stack Developer Technical Evaluation
+
+---
+
+## 📄 Project Summary
+
+WatchTogether demonstrates full-stack development using React, TypeScript, Node.js, Express, and Socket.IO.
+
+The project focuses on real-time state synchronization, server-side authorization, collaborative room management, and deployment of a full-stack application.
+
+**Built to make watching together easier, wherever you are.** 🎬
