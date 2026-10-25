@@ -147,7 +147,10 @@ io.on("connection", (socket) => {
     if (person.role !== "host") return reject(socket, "Only the host can assign roles.");
     const targetId = String(payload?.userId ?? "");
     const role = payload?.role;
-    if (!["moderator", "participant"].includes(String(role))) return reject(socket, "Choose Moderator or Participant.");
+
+    if (role !== "moderator" && role !== "participant") {
+      return reject(socket, "Choose Moderator or Participant.");
+    }
     if (targetId === room.hostId) return reject(socket, "The host role cannot be changed here.");
     const target = room.people.get(targetId);
     if (!target) return reject(socket, "Participant is no longer in this room.");
